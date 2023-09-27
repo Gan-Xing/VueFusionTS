@@ -16,6 +16,8 @@
 <script lang="ts">
 import { ref } from '@vue/composition-api'
 import TiptapEditor from './TiptapEditor.vue'
+import elementUiCss from 'element-ui/lib/theme-chalk/index.css'
+import juice from 'juice'
 
 import { Component } from 'vue'
 import { TiptapEditorComponent } from '@/types'
@@ -41,7 +43,12 @@ export default {
       // 使用子组件的 getHTML 方法获取 html
       if (tiptapEditorRef.value) {
         const html = tiptapEditorRef.value.getHTML()
-        console.log(html)
+
+        // 使用 Juice 内联 CSS
+        const inlinedHTML = juice.inlineContent(html, elementUiCss)
+
+        console.log('inlinedHTML', inlinedHTML)
+
         showEditor.value = false
       }
     }

@@ -1,9 +1,19 @@
 <template>
   <div>
-    <!-- 加粗按钮 -->
-    <button @click="toggleBold">加粗</button>
+    <div class="editor-menu-bar">
+      <button :class="{ active: isBoldActive }" @click="toggleBold">
+        加粗
+      </button>
+      <button :class="{ active: isItalicActive }" @click="toggleItalic">
+        斜体
+      </button>
+      <button :class="{ active: isUnderlineActive }" @click="toggleUnderline">
+        下划线
+      </button>
+    </div>
 
     <EditorContent :editor="editor" />
+
     <el-form>
       <el-form-item label="HTML内容">
         <el-input
@@ -19,9 +29,17 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, onBeforeUnmount, Ref } from '@vue/composition-api'
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  computed,
+  Ref
+} from '@vue/composition-api'
 import { Editor, EditorContent } from '@tiptap/vue-2'
 import StarterKit from '@tiptap/starter-kit'
+import Underline from '@tiptap/extension-underline'
+import TextAlign from '@tiptap/extension-text-align'
 import { Component } from 'vue'
 
 export default {
@@ -33,29 +51,46 @@ export default {
     const editor: Ref<Editor | null> = ref(null)
     const htmlContent: Ref<string> = ref('')
 
-    // 加粗功能的事件处理器
+    // 加粗
     const toggleBold = () => {
       if (editor.value) {
-        editor.value.chain().focus().toggleBold().run()
+        editor.value.chain().toggleBold().run()
       }
     }
+    const isBoldActive = computed(() => editor.value?.isActive('bold') || false)
 
-    const getHTML = () => {
-      return editor.value!.getHTML()
+    // 斜体
+    const toggleItalic = () => {
+      if (editor.value) {
+        editor.value.chain().toggleItalic().run()
+      }
     }
+    const isItalicActive = computed(
+      () => editor.value?.isActive('italic') || false
+    )
+
+    // 下划线
+    const toggleUnderline = () => {
+      if (editor.value) {
+        editor.value.chain().toggleUnderline().run()
+      }
+    }
+    const isUnderlineActive = computed(
+      () => editor.value?.isActive('underline') || false
+    )
+
+    // ... 其他功能 ...
 
     onMounted(() => {
       editor.value = new Editor({
-        extensions: [StarterKit],
+        extensions: [StarterKit, Underline, TextAlign],
         content: '<p>Hello World! 🌍</p>'
       })
 
-      // 监听编辑器的更新事件
       editor.value.on('update', () => {
         htmlContent.value = editor.value!.getHTML()
       })
 
-      // 初始化HTML内容
       htmlContent.value = editor.value!.getHTML()
     })
 
@@ -68,9 +103,20 @@ export default {
     return {
       editor,
       htmlContent,
-      getHTML,
-      toggleBold // 返回我们新添加的方法
+      toggleBold,
+      isBoldActive,
+      toggleItalic,
+      isItalicActive,
+      toggleUnderline,
+      isUnderlineActive
     }
   }
 } as Component
 </script>
+
+<style scoped>
+.active {
+  background-color: #007bff;
+  color: white;
+}
+</style>
