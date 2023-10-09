@@ -28,6 +28,9 @@
     "vue-eslint-parser": "^9.3.1"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.4.2",
+    "@fortawesome/free-solid-svg-icons": "^6.4.2",
+    "@fortawesome/vue-fontawesome": "2.x",
     "@tiptap/extension-blockquote": "^2.1.11",
     "@tiptap/extension-color": "^2.1.11",
     "@tiptap/extension-font-family": "^2.1.11",

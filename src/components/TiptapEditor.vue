@@ -1,21 +1,25 @@
 <template>
-  <div>
+  <div class="tiptapEditor">
     <div class="editor-menu-bar">
+      <!-- 加粗 -->
       <button :class="{ active: isBoldActive }" @click="toggleBold">
-        加粗
+        <img src="@/components/svg/加粗.svg" alt="bold" />
       </button>
+      <!-- 斜体 -->
       <button :class="{ active: isItalicActive }" @click="toggleItalic">
-        斜体
+        <img src="@/components/svg/斜体.svg" alt="italic" />
       </button>
+      <!-- 下划线 -->
       <button :class="{ active: isUnderlineActive }" @click="toggleUnderline">
-        下划线
+        <img src="@/components/svg/下划线.svg" alt="underline" />
       </button>
+      <!-- 引用 -->
       <button :class="{ active: isBlockquoteActive }" @click="toggleBlockquote">
-        引用
+        <img src="@/components/svg/引用.svg" alt="quote-right" />
       </button>
       <el-dropdown @command="setHeading">
-        <button class="el-button el-button--primary">
-          标题 <i class="el-icon-arrow-down el-icon--right"></i>
+        <button>
+          <img src="@/components/svg/标题.svg" alt="heading" />
         </button>
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item command="1">H1</el-dropdown-item>
@@ -26,62 +30,79 @@
           <el-dropdown-item command="6">H6</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
+      <!-- 删除线 -->
       <button :class="{ active: isStrikeActive }" @click="toggleStrike">
-        删除线
+        <img src="@/components/svg/删除线.svg" alt="strikethrough" />
       </button>
+      <!-- 无序列表 -->
       <button :class="{ active: isBulletListActive }" @click="toggleBulletList">
-        项目符号列表
+        <img src="@/components/svg/无序列表.svg" alt="list-ul" />
       </button>
+      <!-- 有序列表 -->
       <button
         :class="{ active: isOrderedListActive }"
         @click="toggleOrderedList"
       >
-        有序列表
+        <img src="@/components/svg/有序列表.svg" alt="list-ol" />
       </button>
+      <!-- 分隔线 -->
       <button
         :class="{ active: isHorizontalRuleActive }"
         @click="toggleHorizontalRule"
       >
-        分隔线
+        <img src="@/components/svg/横线.svg" alt="minus" />
       </button>
+      <!-- 左对齐 -->
       <button
         :class="{ active: isTextAlignActive('left') }"
         @click="setTextAlign('left')"
       >
-        左对齐
+        <img src="@/components/svg/文字居左.svg" alt="textleft" />
       </button>
+      <!-- 文字居中 -->
       <button
         :class="{ active: isTextAlignActive('center') }"
         @click="setTextAlign('center')"
       >
-        居中
+        <img src="@/components/svg/文字居中.svg" alt="textcenter" />
       </button>
+      <!-- 右对齐 -->
       <button
         :class="{ active: isTextAlignActive('right') }"
         @click="setTextAlign('right')"
       >
-        右对齐
+        <img src="@/components/svg/文字居右.svg" alt="textright" />
       </button>
+      <!-- 两端对齐 -->
       <button
         :class="{ active: isTextAlignActive('justify') }"
         @click="setTextAlign('justify')"
       >
-        两端对齐
+        <img src="@/components/svg/文字两边对齐.svg" alt="textjustify" />
       </button>
+      <!-- 上标 -->
       <button
         :class="{ active: isSuperscriptActive }"
         @click="toggleSuperscript"
       >
-        上标
+        <img src="@/components/svg/上标.svg" alt="superscript" />
       </button>
+      <!-- 下标 -->
       <button :class="{ active: isSubscriptActive }" @click="toggleSubscript">
-        下标
+        <img src="@/components/svg/下标.svg" alt="subscript" />
       </button>
-      <button @click="undo">撤销</button>
-      <button @click="redo">重做</button>
+      <!-- 撤销 -->
+      <button @click="undo">
+        <img src="@/components/svg/撤销.svg" alt="undo" />
+      </button>
+      <!-- 重做 -->
+      <button @click="redo">
+        <img src="@/components/svg/重做.svg" alt="redo" />
+      </button>
+      <!-- 表格操作 Dropdown ... -->
       <el-dropdown @command="handleTableCommand">
-        <button class="el-button el-button--primary">
-          表格操作 <i class="el-icon-arrow-down el-icon--right"></i>
+        <button>
+          <img src="@/components/svg/表格.svg" alt="tableau" />
         </button>
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item command="insertTable">插入表格</el-dropdown-item>
@@ -95,8 +116,7 @@
           <el-dropdown-item command="addRowBefore">上方插入行</el-dropdown-item>
           <el-dropdown-item command="addRowAfter">下方插入行</el-dropdown-item>
           <el-dropdown-item command="deleteRow">删除行</el-dropdown-item>
-          <el-dropdown-item command="mergeCells">合并单元格</el-dropdown-item>
-          <el-dropdown-item command="splitCell">拆分单元格</el-dropdown-item>
+          <el-dropdown-item command="mergeOrSplit">合并或拆分</el-dropdown-item>
           <el-dropdown-item command="toggleHeaderColumn"
             >切换列头</el-dropdown-item
           >
@@ -106,22 +126,11 @@
           <el-dropdown-item command="toggleHeaderCell"
             >切换单元格头</el-dropdown-item
           >
-          <el-dropdown-item command="mergeOrSplit">合并或拆分</el-dropdown-item>
-          <el-dropdown-item command="setCellAttribute"
-            >设置单元格属性</el-dropdown-item
-          >
-          <el-dropdown-item command="fixTables">修复表格</el-dropdown-item>
-          <el-dropdown-item command="goToNextCell"
-            >转到下一个单元格</el-dropdown-item
-          >
-          <el-dropdown-item command="goToPreviousCell"
-            >转到上一个单元格</el-dropdown-item
-          >
         </el-dropdown-menu>
       </el-dropdown>
     </div>
 
-    <EditorContent :editor="editor" />
+    <EditorContent :editor="editor" class="EditorContent" />
 
     <el-form>
       <el-form-item label="HTML内容">
@@ -274,7 +283,7 @@ export default {
     const isTextAlignActive = (
       direction: 'left' | 'center' | 'right' | 'justify'
     ) => {
-      if (editor.value) {
+      if (editor.value && direction !== 'left') {
         return editor.value.isActive({ textAlign: direction })
       }
       return false
@@ -447,11 +456,6 @@ export default {
 </script>
 
 <style lang="scss">
-.active {
-  background-color: #007bff;
-  color: white;
-}
-
 .tiptap {
   table {
     border-collapse: collapse;
@@ -522,5 +526,60 @@ export default {
 blockquote {
   padding-left: 1rem;
   border-left: 3px solid rgba(13, 13, 13, 0.1);
+}
+
+/* 编辑器样式 */
+button {
+  background-color: transparent;
+  border: 2px solid #409eff; /* ElementUI 蓝色 */
+  padding: 6px 10px; /* 减小了内部间距 */
+  border-radius: 4px;
+  color: #409eff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+  font-size: 13px; /* 调整字体大小 */
+  font-weight: 500;
+  margin: 4px; /* 调整间距，使其有缝隙 */
+  position: relative;
+}
+
+button:hover {
+  background-color: #409eff;
+  color: white;
+}
+
+button.active {
+  background-color: #ffc107; /* 使用稍微明亮的黄色作为活跃背景色 */
+  border-color: #ffc107;
+  color: white;
+}
+
+button:active {
+  transform: translateY(1px); /* 减小按下效果的移动距离 */
+}
+
+button:focus {
+  box-shadow: 0 0 6px rgba(64, 158, 255, 0.4); /* 使用ElementUI蓝色的焦点阴影 */
+}
+
+.EditorContent {
+  border: 2px solid #409eff; /* ElementUI 蓝色 */
+  padding: 16px;
+  border-radius: 4px;
+  color: #333;
+  font-size: 15px;
+  transition: border 0.3s ease;
+  outline: none;
+}
+
+.EditorContent:focus {
+  border-color: #ffc107; /* 使用黄色作为焦点边框色 */
+  box-shadow: 0 0 6px rgba(64, 158, 255, 0.4); /* 使用ElementUI蓝色的焦点阴影 */
+}
+
+.tiptap.ProseMirror:focus-visible {
+  outline: none; /* ElementUI 蓝色 */
+  // box-shadow: 0 0 6px rgba(64, 158, 255, 0.4); /* 使用ElementUI蓝色的焦点阴影 */
 }
 </style>

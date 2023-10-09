@@ -4,6 +4,7 @@
     <el-dialog
       :visible.sync="showEditor"
       :close-on-click-modal="false"
+      class="customDialog"
       @close="destroyEditor"
     >
       <TiptapEditor ref="tiptapEditorRef" />
@@ -67,3 +68,10 @@ export default {
   }
 } as Component
 </script>
+<style lang="scss">
+.customDialog {
+  .el-dialog {
+    min-width: 520px;
+  }
+}
+</style>

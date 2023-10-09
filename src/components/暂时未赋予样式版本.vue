@@ -13,6 +13,37 @@
       <button :class="{ active: isBlockquoteActive }" @click="toggleBlockquote">
         引用
       </button>
+      <el-dropdown @command="setHeading">
+        <button class="el-button el-button--primary">
+          标题 <i class="el-icon-arrow-down el-icon--right"></i>
+        </button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="1">H1</el-dropdown-item>
+          <el-dropdown-item command="2">H2</el-dropdown-item>
+          <el-dropdown-item command="3">H3</el-dropdown-item>
+          <el-dropdown-item command="4">H4</el-dropdown-item>
+          <el-dropdown-item command="5">H5</el-dropdown-item>
+          <el-dropdown-item command="6">H6</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <button :class="{ active: isStrikeActive }" @click="toggleStrike">
+        删除线
+      </button>
+      <button :class="{ active: isBulletListActive }" @click="toggleBulletList">
+        无序列表
+      </button>
+      <button
+        :class="{ active: isOrderedListActive }"
+        @click="toggleOrderedList"
+      >
+        有序列表
+      </button>
+      <button
+        :class="{ active: isHorizontalRuleActive }"
+        @click="toggleHorizontalRule"
+      >
+        分隔线
+      </button>
       <button
         :class="{ active: isTextAlignActive('left') }"
         @click="setTextAlign('left')"
@@ -37,7 +68,57 @@
       >
         两端对齐
       </button>
-      <button @click="unsetTextAlign">取消文本对齐</button>
+      <button
+        :class="{ active: isSuperscriptActive }"
+        @click="toggleSuperscript"
+      >
+        上标
+      </button>
+      <button :class="{ active: isSubscriptActive }" @click="toggleSubscript">
+        下标
+      </button>
+      <button @click="undo">撤销</button>
+      <button @click="redo">重做</button>
+      <el-dropdown @command="handleTableCommand">
+        <button class="el-button el-button--primary">
+          表格操作 <i class="el-icon-arrow-down el-icon--right"></i>
+        </button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="insertTable">插入表格</el-dropdown-item>
+          <el-dropdown-item command="addColumnBefore"
+            >左侧插入列</el-dropdown-item
+          >
+          <el-dropdown-item command="addColumnAfter"
+            >右侧插入列</el-dropdown-item
+          >
+          <el-dropdown-item command="deleteColumn">删除列</el-dropdown-item>
+          <el-dropdown-item command="addRowBefore">上方插入行</el-dropdown-item>
+          <el-dropdown-item command="addRowAfter">下方插入行</el-dropdown-item>
+          <el-dropdown-item command="deleteRow">删除行</el-dropdown-item>
+          <el-dropdown-item command="mergeCells">合并单元格</el-dropdown-item>
+          <el-dropdown-item command="splitCell">拆分单元格</el-dropdown-item>
+          <el-dropdown-item command="toggleHeaderColumn"
+            >切换列头</el-dropdown-item
+          >
+          <el-dropdown-item command="toggleHeaderRow"
+            >切换行头</el-dropdown-item
+          >
+          <el-dropdown-item command="toggleHeaderCell"
+            >切换单元格头</el-dropdown-item
+          >
+          <el-dropdown-item command="mergeOrSplit">合并或拆分</el-dropdown-item>
+          <el-dropdown-item command="setCellAttribute"
+            >设置单元格属性</el-dropdown-item
+          >
+          <el-dropdown-item command="fixTables">修复表格</el-dropdown-item>
+          <el-dropdown-item command="goToNextCell"
+            >转到下一个单元格</el-dropdown-item
+          >
+          <el-dropdown-item command="goToPreviousCell"
+            >转到上一个单元格</el-dropdown-item
+          >
+        </el-dropdown-menu>
+      </el-dropdown>
     </div>
 
     <EditorContent :editor="editor" />
@@ -68,7 +149,14 @@ import { Editor, EditorContent } from '@tiptap/vue-2'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
+import Superscript from '@tiptap/extension-superscript'
+import Subscript from '@tiptap/extension-subscript'
+import Table from '@tiptap/extension-table'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
+import TableRow from '@tiptap/extension-table-row'
 import { Component } from 'vue'
+import { Level } from '@/types'
 
 export default {
   name: 'TiptapEditor',
@@ -79,14 +167,21 @@ export default {
     const editor: Ref<Editor | null> = ref(null)
     const htmlContent: Ref<string> = ref('')
 
+    const hasTextSelected = computed(() => {
+      return (
+        editor.value?.state.selection.from !== editor.value?.state.selection.to
+      )
+    })
+
     // 加粗
     const toggleBold = () => {
       if (editor.value) {
         editor.value.chain().toggleBold().run()
       }
     }
-    const isBoldActive = computed(() => editor.value?.isActive('bold') || false)
-
+    const isBoldActive = computed(
+      () => (hasTextSelected.value && editor.value?.isActive('bold')) || false
+    )
     // 斜体
     const toggleItalic = () => {
       if (editor.value) {
@@ -94,7 +189,7 @@ export default {
       }
     }
     const isItalicActive = computed(
-      () => editor.value?.isActive('italic') || false
+      () => (hasTextSelected.value && editor.value?.isActive('italic')) || false
     )
 
     // 下划线
@@ -104,7 +199,8 @@ export default {
       }
     }
     const isUnderlineActive = computed(
-      () => editor.value?.isActive('underline') || false
+      () =>
+        (hasTextSelected.value && editor.value?.isActive('underline')) || false
     )
 
     // 引用
@@ -116,6 +212,56 @@ export default {
     const isBlockquoteActive = computed(
       () => editor.value?.isActive('blockquote') || false
     )
+
+    // 设置标题大小
+    const setHeading = (level: string) => {
+      if (editor.value) {
+        editor.value
+          .chain()
+          .toggleHeading({ level: parseInt(level) as Level })
+          .run()
+      }
+    }
+
+    // 删除线
+    const toggleStrike = () => {
+      if (editor.value) {
+        editor.value.chain().toggleStrike().run()
+      }
+    }
+    const isStrikeActive = computed(
+      () => (hasTextSelected.value && editor.value?.isActive('strike')) || false
+    )
+
+    // 无序列表
+    const toggleBulletList = () => {
+      if (editor.value) {
+        editor.value.chain().toggleBulletList().run()
+      }
+    }
+    const isBulletListActive = computed(
+      () =>
+        (hasTextSelected.value && editor.value?.isActive('bulletList')) || false
+    )
+
+    // 有序列表
+    const toggleOrderedList = () => {
+      if (editor.value) {
+        editor.value.chain().toggleOrderedList().run()
+      }
+    }
+    const isOrderedListActive = computed(
+      () =>
+        (hasTextSelected.value && editor.value?.isActive('orderedList')) ||
+        false
+    )
+
+    // 水平线
+    const toggleHorizontalRule = () => {
+      if (editor.value) {
+        editor.value.chain().setHorizontalRule().run()
+      }
+    }
 
     const setTextAlign = (
       direction: 'left' | 'center' | 'right' | 'justify'
@@ -134,11 +280,104 @@ export default {
       return false
     }
 
-    const unsetTextAlign = () => {
+    const undo = () => {
       if (editor.value) {
-        editor.value.chain().focus().unsetTextAlign().run()
+        editor.value.chain().undo().run()
       }
     }
+
+    const redo = () => {
+      if (editor.value) {
+        editor.value.chain().redo().run()
+      }
+    }
+
+    const toggleSuperscript = () => {
+      if (editor.value) {
+        editor.value.chain().focus().toggleSuperscript().run()
+      }
+    }
+    const isSuperscriptActive = computed(
+      () =>
+        (hasTextSelected.value && editor.value?.isActive('superscript')) ||
+        false
+    )
+
+    const toggleSubscript = () => {
+      if (editor.value) {
+        editor.value.chain().focus().toggleSubscript().run()
+      }
+    }
+    const isSubscriptActive = computed(
+      () =>
+        (hasTextSelected.value && editor.value?.isActive('subscript')) || false
+    )
+
+    const handleTableCommand = (command: string) => {
+      if (!editor.value) return
+
+      switch (command) {
+        case 'insertTable':
+          editor.value
+            .chain()
+            .focus()
+            .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+            .run()
+          break
+        case 'addColumnBefore':
+          editor.value.chain().focus().addColumnBefore().run()
+          break
+        case 'addColumnAfter':
+          editor.value.chain().focus().addColumnAfter().run()
+          break
+        case 'deleteColumn':
+          editor.value.chain().focus().deleteColumn().run()
+          break
+        case 'addRowBefore':
+          editor.value.chain().focus().addRowBefore().run()
+          break
+        case 'addRowAfter':
+          editor.value.chain().focus().addRowAfter().run()
+          break
+        case 'deleteRow':
+          editor.value.chain().focus().deleteRow().run()
+          break
+        case 'mergeCells':
+          editor.value.chain().focus().mergeCells().run()
+          break
+        case 'splitCell':
+          editor.value.chain().focus().splitCell().run()
+          break
+        case 'toggleHeaderColumn':
+          editor.value.chain().focus().toggleHeaderColumn().run()
+          break
+        case 'toggleHeaderRow':
+          editor.value.chain().focus().toggleHeaderRow().run()
+          break
+        case 'toggleHeaderCell':
+          editor.value.chain().focus().toggleHeaderCell().run()
+          break
+        case 'mergeOrSplit':
+          editor.value.chain().focus().mergeOrSplit().run()
+          break
+        case 'setCellAttribute':
+          editor.value.chain().focus().setCellAttribute('colspan', 2).run()
+          break
+        case 'fixTables':
+          editor.value.chain().focus().fixTables().run()
+          break
+        case 'goToNextCell':
+          editor.value.chain().focus().goToNextCell().run()
+          break
+        case 'goToPreviousCell':
+          editor.value.chain().focus().goToPreviousCell().run()
+          break
+        default:
+          break
+      }
+    }
+
+    // ...其它代码
 
     onMounted(() => {
       editor.value = new Editor({
@@ -146,8 +385,17 @@ export default {
           StarterKit,
           Underline,
           TextAlign.configure({
-            types: ['heading', 'paragraph']
-          })
+            alignments: ['left', 'center', 'right', 'justify'],
+            types: ['heading', 'paragraph', 'taskItem']
+          }),
+          Superscript,
+          Subscript,
+          Table.configure({
+            resizable: true
+          }),
+          TableRow,
+          TableHeader,
+          TableCell
         ],
         content: '<p>Hello World! 🌍</p>'
       })
@@ -178,21 +426,101 @@ export default {
       isBlockquoteActive,
       setTextAlign,
       isTextAlignActive,
-      unsetTextAlign
+      toggleStrike,
+      isStrikeActive,
+      toggleBulletList,
+      isBulletListActive,
+      toggleOrderedList,
+      isOrderedListActive,
+      toggleHorizontalRule,
+      toggleSuperscript,
+      isSuperscriptActive,
+      toggleSubscript,
+      isSubscriptActive,
+      setHeading,
+      handleTableCommand,
+      undo,
+      redo
     }
   }
 } as Component
 </script>
 
-<style>
+<style lang="scss">
 .active {
   background-color: #007bff;
   color: white;
 }
 
+.tiptap {
+  table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+
+    td,
+    th {
+      min-width: 1em;
+      border: 2px solid #ced4da;
+      padding: 3px 5px;
+      vertical-align: top;
+      box-sizing: border-box;
+      position: relative;
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    th {
+      font-weight: bold;
+      text-align: left;
+      background-color: #f1f3f5;
+    }
+
+    .selectedCell:after {
+      z-index: 2;
+      position: absolute;
+      content: '';
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: rgba(200, 200, 255, 0.4);
+      pointer-events: none;
+    }
+
+    .column-resize-handle {
+      position: absolute;
+      right: -2px;
+      top: 0;
+      bottom: -2px;
+      width: 4px;
+      background-color: #adf;
+      pointer-events: none;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+.tableWrapper {
+  padding: 1rem 0;
+  overflow-x: auto;
+}
+
+.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
+}
+
 /* 引用的样式 */
 blockquote {
   padding-left: 1rem;
-  border-left: 3px solid rgba(#0d0d0d, 0.1);
+  border-left: 3px solid rgba(13, 13, 13, 0.1);
 }
 </style>
