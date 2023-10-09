@@ -1,7 +1,11 @@
 <template>
   <div>
     <el-button @click="showEditor = true">Open Editor</el-button>
-    <el-dialog :visible.sync="showEditor" @close="destroyEditor">
+    <el-dialog
+      :visible.sync="showEditor"
+      :close-on-click-modal="false"
+      @close="destroyEditor"
+    >
       <TiptapEditor ref="tiptapEditorRef" />
       <template #footer>
         <div class="dialog-footer">

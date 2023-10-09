@@ -13,19 +13,9 @@
       <button :class="{ active: isBlockquoteActive }" @click="toggleBlockquote">
         引用
       </button>
-      <el-dropdown @command="setHeading">
-        <button class="el-button el-button--primary">
-          标题 <i class="el-icon-arrow-down el-icon--right"></i>
-        </button>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="1">H1</el-dropdown-item>
-          <el-dropdown-item command="2">H2</el-dropdown-item>
-          <el-dropdown-item command="3">H3</el-dropdown-item>
-          <el-dropdown-item command="4">H4</el-dropdown-item>
-          <el-dropdown-item command="5">H5</el-dropdown-item>
-          <el-dropdown-item command="6">H6</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+      <button :class="{ active: isHeadingActive }" @click="toggleHeading">
+        标题
+      </button>
       <button :class="{ active: isStrikeActive }" @click="toggleStrike">
         删除线
       </button>
@@ -79,44 +69,39 @@
       </button>
       <button @click="undo">撤销</button>
       <button @click="redo">重做</button>
-      <el-dropdown @command="handleTableCommand">
+      <input
+        type="color"
+        :value="editor.getAttributes('textStyle').color"
+        @input="editor.chain().focus().setColor($event.target.value).run()"
+      />
+      <el-dropdown @command="setFontFamily">
         <button class="el-button el-button--primary">
-          表格操作 <i class="el-icon-arrow-down el-icon--right"></i>
+          字体 <i class="el-icon-arrow-down el-icon--right"></i>
         </button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="insertTable">插入表格</el-dropdown-item>
-          <el-dropdown-item command="addColumnBefore"
-            >左侧插入列</el-dropdown-item
+          <el-dropdown-item command="SimSun">宋体</el-dropdown-item>
+          <el-dropdown-item command="Microsoft YaHei"
+            >微软雅黑</el-dropdown-item
           >
-          <el-dropdown-item command="addColumnAfter"
-            >右侧插入列</el-dropdown-item
+          <el-dropdown-item command="KaiTi">楷体</el-dropdown-item>
+          <el-dropdown-item command="LiSu">隶书</el-dropdown-item>
+          <el-dropdown-item command="FangSong">仿宋</el-dropdown-item>
+          <el-dropdown-item command="YouYuan">幼圆</el-dropdown-item>
+          <el-dropdown-item command="Xingkai SC">行楷</el-dropdown-item>
+          <el-dropdown-item command="Arial">Arial</el-dropdown-item>
+          <el-dropdown-item command="Verdana">Verdana</el-dropdown-item>
+          <el-dropdown-item command="Georgia">Georgia</el-dropdown-item>
+          <el-dropdown-item command="Courier New">Courier New</el-dropdown-item>
+          <el-dropdown-item command="Times New Roman"
+            >Times New Roman</el-dropdown-item
           >
-          <el-dropdown-item command="deleteColumn">删除列</el-dropdown-item>
-          <el-dropdown-item command="addRowBefore">上方插入行</el-dropdown-item>
-          <el-dropdown-item command="addRowAfter">下方插入行</el-dropdown-item>
-          <el-dropdown-item command="deleteRow">删除行</el-dropdown-item>
-          <el-dropdown-item command="mergeCells">合并单元格</el-dropdown-item>
-          <el-dropdown-item command="splitCell">拆分单元格</el-dropdown-item>
-          <el-dropdown-item command="toggleHeaderColumn"
-            >切换列头</el-dropdown-item
+          <el-dropdown-item command="Trebuchet MS"
+            >Trebuchet MS</el-dropdown-item
           >
-          <el-dropdown-item command="toggleHeaderRow"
-            >切换行头</el-dropdown-item
+          <el-dropdown-item command="Lucida Sans Unicode"
+            >Lucida Sans</el-dropdown-item
           >
-          <el-dropdown-item command="toggleHeaderCell"
-            >切换单元格头</el-dropdown-item
-          >
-          <el-dropdown-item command="mergeOrSplit">合并或拆分</el-dropdown-item>
-          <el-dropdown-item command="setCellAttribute"
-            >设置单元格属性</el-dropdown-item
-          >
-          <el-dropdown-item command="fixTables">修复表格</el-dropdown-item>
-          <el-dropdown-item command="goToNextCell"
-            >转到下一个单元格</el-dropdown-item
-          >
-          <el-dropdown-item command="goToPreviousCell"
-            >转到上一个单元格</el-dropdown-item
-          >
+          <el-dropdown-item command="Tahoma">Tahoma</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
@@ -151,12 +136,10 @@ import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
 import Superscript from '@tiptap/extension-superscript'
 import Subscript from '@tiptap/extension-subscript'
-import Table from '@tiptap/extension-table'
-import TableCell from '@tiptap/extension-table-cell'
-import TableHeader from '@tiptap/extension-table-header'
-import TableRow from '@tiptap/extension-table-row'
+import { Color } from '@tiptap/extension-color'
+import TextStyle from '@tiptap/extension-text-style'
 import { Component } from 'vue'
-import { Level } from '@/types'
+import FontFamily from '@tiptap/extension-font-family'
 
 export default {
   name: 'TiptapEditor',
@@ -213,15 +196,16 @@ export default {
       () => editor.value?.isActive('blockquote') || false
     )
 
-    // 设置标题大小
-    const setHeading = (level: string) => {
+    // 标题
+    const toggleHeading = () => {
       if (editor.value) {
-        editor.value
-          .chain()
-          .toggleHeading({ level: parseInt(level) as Level })
-          .run()
+        editor.value.chain().toggleHeading({ level: 1 }).run()
       }
     }
+    const isHeadingActive = computed(
+      () =>
+        (hasTextSelected.value && editor.value?.isActive('heading')) || false
+    )
 
     // 删除线
     const toggleStrike = () => {
@@ -313,71 +297,11 @@ export default {
         (hasTextSelected.value && editor.value?.isActive('subscript')) || false
     )
 
-    const handleTableCommand = (command: string) => {
-      if (!editor.value) return
-
-      switch (command) {
-        case 'insertTable':
-          editor.value
-            .chain()
-            .focus()
-            .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-            .run()
-          break
-        case 'addColumnBefore':
-          editor.value.chain().focus().addColumnBefore().run()
-          break
-        case 'addColumnAfter':
-          editor.value.chain().focus().addColumnAfter().run()
-          break
-        case 'deleteColumn':
-          editor.value.chain().focus().deleteColumn().run()
-          break
-        case 'addRowBefore':
-          editor.value.chain().focus().addRowBefore().run()
-          break
-        case 'addRowAfter':
-          editor.value.chain().focus().addRowAfter().run()
-          break
-        case 'deleteRow':
-          editor.value.chain().focus().deleteRow().run()
-          break
-        case 'mergeCells':
-          editor.value.chain().focus().mergeCells().run()
-          break
-        case 'splitCell':
-          editor.value.chain().focus().splitCell().run()
-          break
-        case 'toggleHeaderColumn':
-          editor.value.chain().focus().toggleHeaderColumn().run()
-          break
-        case 'toggleHeaderRow':
-          editor.value.chain().focus().toggleHeaderRow().run()
-          break
-        case 'toggleHeaderCell':
-          editor.value.chain().focus().toggleHeaderCell().run()
-          break
-        case 'mergeOrSplit':
-          editor.value.chain().focus().mergeOrSplit().run()
-          break
-        case 'setCellAttribute':
-          editor.value.chain().focus().setCellAttribute('colspan', 2).run()
-          break
-        case 'fixTables':
-          editor.value.chain().focus().fixTables().run()
-          break
-        case 'goToNextCell':
-          editor.value.chain().focus().goToNextCell().run()
-          break
-        case 'goToPreviousCell':
-          editor.value.chain().focus().goToPreviousCell().run()
-          break
-        default:
-          break
+    const setFontFamily = (fontName: string) => {
+      if (editor.value) {
+        editor.value.chain().focus().setFontFamily(fontName).run()
       }
     }
-
-    // ...其它代码
 
     onMounted(() => {
       editor.value = new Editor({
@@ -390,12 +314,9 @@ export default {
           }),
           Superscript,
           Subscript,
-          Table.configure({
-            resizable: true
-          }),
-          TableRow,
-          TableHeader,
-          TableCell
+          TextStyle,
+          Color,
+          FontFamily
         ],
         content: '<p>Hello World! 🌍</p>'
       })
@@ -426,6 +347,8 @@ export default {
       isBlockquoteActive,
       setTextAlign,
       isTextAlignActive,
+      toggleHeading,
+      isHeadingActive,
       toggleStrike,
       isStrikeActive,
       toggleBulletList,
@@ -437,8 +360,7 @@ export default {
       isSuperscriptActive,
       toggleSubscript,
       isSubscriptActive,
-      setHeading,
-      handleTableCommand,
+      setFontFamily,
       undo,
       redo
     }
@@ -450,72 +372,6 @@ export default {
 .active {
   background-color: #007bff;
   color: white;
-}
-
-.tiptap {
-  table {
-    border-collapse: collapse;
-    table-layout: fixed;
-    width: 100%;
-    margin: 0;
-    overflow: hidden;
-
-    td,
-    th {
-      min-width: 1em;
-      border: 2px solid #ced4da;
-      padding: 3px 5px;
-      vertical-align: top;
-      box-sizing: border-box;
-      position: relative;
-
-      > * {
-        margin-bottom: 0;
-      }
-    }
-
-    th {
-      font-weight: bold;
-      text-align: left;
-      background-color: #f1f3f5;
-    }
-
-    .selectedCell:after {
-      z-index: 2;
-      position: absolute;
-      content: '';
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      background: rgba(200, 200, 255, 0.4);
-      pointer-events: none;
-    }
-
-    .column-resize-handle {
-      position: absolute;
-      right: -2px;
-      top: 0;
-      bottom: -2px;
-      width: 4px;
-      background-color: #adf;
-      pointer-events: none;
-    }
-
-    p {
-      margin: 0;
-    }
-  }
-}
-
-.tableWrapper {
-  padding: 1rem 0;
-  overflow-x: auto;
-}
-
-.resize-cursor {
-  cursor: ew-resize;
-  cursor: col-resize;
 }
 
 /* 引用的样式 */
