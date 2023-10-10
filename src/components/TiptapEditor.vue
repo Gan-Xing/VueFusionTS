@@ -46,10 +46,7 @@
         <img src="@/components/svg/有序列表.svg" alt="list-ol" />
       </button>
       <!-- 分隔线 -->
-      <button
-        :class="{ active: isHorizontalRuleActive }"
-        @click="toggleHorizontalRule"
-      >
+      <button @click="toggleHorizontalRule">
         <img src="@/components/svg/横线.svg" alt="minus" />
       </button>
       <!-- 左对齐 -->
@@ -164,6 +161,7 @@ import Table from '@tiptap/extension-table'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
+import Image from '@tiptap/extension-image'
 import { Component } from 'vue'
 import { Level } from '@/types'
 
@@ -386,7 +384,14 @@ export default {
       }
     }
 
-    // ...其它代码
+    const updateEditorContent = (newHtml: string) => {
+      if (editor.value && newHtml) {
+        editor.value.commands.setContent(newHtml)
+      }
+    }
+    const getHTML = () => {
+      return editor.value!.getHTML()
+    }
 
     onMounted(() => {
       editor.value = new Editor({
@@ -404,7 +409,11 @@ export default {
           }),
           TableRow,
           TableHeader,
-          TableCell
+          TableCell,
+          Image.configure({
+            inline: true,
+            allowBase64: true
+          })
         ],
         content: '<p>Hello World! 🌍</p>'
       })
@@ -449,7 +458,9 @@ export default {
       setHeading,
       handleTableCommand,
       undo,
-      redo
+      redo,
+      updateEditorContent,
+      getHTML
     }
   }
 } as Component
@@ -571,6 +582,7 @@ button:focus {
   font-size: 15px;
   transition: border 0.3s ease;
   outline: none;
+  min-height: 200px;
 }
 
 .EditorContent:focus {
@@ -580,6 +592,5 @@ button:focus {
 
 .tiptap.ProseMirror:focus-visible {
   outline: none; /* ElementUI 蓝色 */
-  // box-shadow: 0 0 6px rgba(64, 158, 255, 0.4); /* 使用ElementUI蓝色的焦点阴影 */
 }
 </style>

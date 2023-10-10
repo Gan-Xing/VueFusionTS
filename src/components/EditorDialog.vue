@@ -8,10 +8,31 @@
       @close="destroyEditor"
     >
       <TiptapEditor ref="tiptapEditorRef" />
+      <el-upload
+        class="upload-demo"
+        action="#"
+        :before-upload="beforeUpload"
+        drag
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <div slot="tip" class="el-upload__tip">只支持.doc, .docx文件</div>
+      </el-upload>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="destroyEditor">取消</el-button>
-          <el-button type="primary" @click="confirmEditor">确定</el-button>
+          <div class="dialog-footer-left">
+            <el-upload action="#" :before-upload="beforeUpload">
+              <el-button slot="trigger" size="small" type="primary"
+                >选择文件</el-button
+              >
+            </el-upload>
+          </div>
+          <span slot="footer" class="dialog-footer-right">
+            <el-button size="small" @click="destroyEditor">取消</el-button>
+            <el-button size="small" type="primary" @click="confirmEditor"
+              >确定</el-button
+            >
+          </span>
         </div>
       </template>
     </el-dialog>
@@ -22,10 +43,13 @@
 import { ref } from '@vue/composition-api'
 import TiptapEditor from './TiptapEditor.vue'
 import elementUiCss from 'element-ui/lib/theme-chalk/index.css'
+import mammoth from 'mammoth'
+import imageCompression from 'browser-image-compression'
 import juice from 'juice'
 
 import { Component } from 'vue'
 import { TiptapEditorComponent } from '@/types'
+import { Loading, Message } from 'element-ui'
 
 export default {
   name: 'EditorDialog',
@@ -58,12 +82,73 @@ export default {
       }
     }
 
+    const beforeUpload = async (file: any) => {
+      let loadingInstance
+      try {
+        loadingInstance = Loading.service({
+          fullscreen: true,
+          text: '正在转换文件...'
+        })
+        const htmlContent = (await convertDocxToHtml(file)) as string
+        if (tiptapEditorRef.value) {
+          tiptapEditorRef.value.updateEditorContent(htmlContent)
+        }
+      } catch (err) {
+        Message.error('文件转化为编辑器内容失败,请选择doc,docx文件')
+      } finally {
+        // 关闭加载状态框
+        if (loadingInstance) {
+          loadingInstance.close()
+        }
+      }
+      return false
+    }
+
+    const convertDocxToHtml = (file: any) => {
+      return new Promise((resolve, reject) => {
+        const options = {
+          convertImage: mammoth.images.imgElement(function (image) {
+            return image.read('base64').then(async (base64) => {
+              const base64DataUrl =
+                'data:' + image.contentType + ';base64,' + base64
+              const tempImageFile = await imageCompression.getFilefromDataUrl(
+                base64DataUrl,
+                'temp.jpg'
+              )
+              const compressionOptions = {
+                maxSizeMB: 0.05, // 0.01MB = 10KB
+                useWebWorker: true
+              }
+              const compressedFile = await imageCompression(
+                tempImageFile,
+                compressionOptions
+              )
+              const compressedDataUrl =
+                await imageCompression.getDataUrlFromFile(compressedFile)
+              return { src: compressedDataUrl }
+            })
+          })
+        }
+
+        mammoth
+          .convertToHtml({ arrayBuffer: file.arrayBuffer() }, options)
+          .then((result) => {
+            resolve(result.value)
+          })
+          .catch((error) => {
+            reject(error)
+          })
+      })
+    }
+
     return {
       showEditor,
       openEditor,
       destroyEditor,
       confirmEditor,
-      tiptapEditorRef
+      tiptapEditorRef,
+      beforeUpload,
+      convertDocxToHtml
     }
   }
 } as Component
@@ -73,5 +158,15 @@ export default {
   .el-dialog {
     min-width: 520px;
   }
+}
+.dialog-footer {
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.dialog-footer-right {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
