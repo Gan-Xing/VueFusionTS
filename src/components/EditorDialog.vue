@@ -8,16 +8,6 @@
       @close="destroyEditor"
     >
       <TiptapEditor ref="tiptapEditorRef" />
-      <el-upload
-        class="upload-demo"
-        action="#"
-        :before-upload="beforeUpload"
-        drag
-      >
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        <div slot="tip" class="el-upload__tip">只支持.doc, .docx文件</div>
-      </el-upload>
       <template #footer>
         <div class="dialog-footer">
           <div class="dialog-footer-left">
@@ -154,9 +144,33 @@ export default {
 } as Component
 </script>
 <style lang="scss">
+// .customDialog {
+//   .el-dialog {
+//     min-width: 520px;
+//   }
+// }
 .customDialog {
-  .el-dialog {
-    min-width: 520px;
+  width: 100%;
+  // height: 100vh;
+  div.el-dialog {
+    width: 100%;
+    height: 100%;
+    margin: 0 !important;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    .el-dialog__body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: calc(100% - 67px - 55px);
+      .tiptapEditor {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        height: calc(100% - 32px);
+      }
+    }
   }
 }
 .dialog-footer {

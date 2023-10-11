@@ -128,18 +128,6 @@
     </div>
 
     <EditorContent :editor="editor" class="EditorContent" />
-
-    <el-form>
-      <el-form-item label="HTML内容">
-        <el-input
-          v-model="htmlContent"
-          type="textarea"
-          :autosize="true"
-          readonly
-          placeholder="HTML内容将在这里显示..."
-        ></el-input>
-      </el-form-item>
-    </el-form>
   </div>
 </template>
 
@@ -582,7 +570,8 @@ button:focus {
   font-size: 15px;
   transition: border 0.3s ease;
   outline: none;
-  min-height: 200px;
+  flex: 1;
+  overflow: scroll;
 }
 
 .EditorContent:focus {

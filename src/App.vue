@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import EditorDialog from './components/EditorDialog.vue';
+import EditorDialog from './components/EditorDialog.vue'
 
 export default {
   name: 'App',
