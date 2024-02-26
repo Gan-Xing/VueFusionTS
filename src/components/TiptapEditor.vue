@@ -3,7 +3,7 @@
     <div class="editor-menu-bar">
       <!-- 加粗 -->
       <button :class="{ active: isBoldActive }" @click="toggleBold">
-        <img src="@/components/svg/加粗.svg" alt="bold" />
+        <img :src="boldIconPath" alt="bold" />
       </button>
       <!-- 斜体 -->
       <button :class="{ active: isItalicActive }" @click="toggleItalic">
@@ -152,6 +152,7 @@ import TableRow from '@tiptap/extension-table-row'
 import Image from '@tiptap/extension-image'
 import { Component } from 'vue'
 import { Level } from '@/types'
+import boldIcon from '@/components/svg/加粗.svg'
 
 export default {
   name: 'TiptapEditor',
@@ -412,6 +413,7 @@ export default {
 
       htmlContent.value = editor.value!.getHTML()
     })
+    const boldIconPath = ref(boldIcon)
 
     onBeforeUnmount(() => {
       if (editor.value) {
@@ -448,7 +450,8 @@ export default {
       undo,
       redo,
       updateEditorContent,
-      getHTML
+      getHTML,
+      boldIconPath
     }
   }
 } as Component

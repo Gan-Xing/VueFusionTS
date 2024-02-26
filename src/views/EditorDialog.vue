@@ -31,7 +31,7 @@
 
 <script lang="ts">
 import { ref } from '@vue/composition-api'
-import TiptapEditor from './TiptapEditor.vue'
+import TiptapEditor from '@/components/TiptapEditor.vue'
 import elementUiCss from 'element-ui/lib/theme-chalk/index.css'
 import mammoth from 'mammoth'
 import imageCompression from 'browser-image-compression'

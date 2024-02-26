@@ -11,6 +11,7 @@
     "@babel/core": "^7.23.0",
     "@babel/eslint-parser": "^7.22.15",
     "@babel/preset-env": "^7.22.20",
+    "@types/node": "^20.11.20",
     "@types/vue": "2.0.0",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
@@ -55,7 +56,9 @@
     "purify-css": "^1.2.5",
     "sass": "^1.69.0",
     "scss": "^0.2.4",
+    "vite-plugin-qiankun": "^1.0.15",
     "vue": "2.6.14",
+    "vue-router": "^3.6.5",
     "vue-template-compiler": "2.6.14"
   }
 }
